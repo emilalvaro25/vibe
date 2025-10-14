@@ -9,7 +9,9 @@ import Intro from './Intro';
 import FeedItem from './FeedItem';
 
 export default function App() {
-  const { messages, isGenerating, chat } = useStore.getState();
+  const messages = useStore((state) => state.messages);
+  const isGenerating = useStore((state) => state.isGenerating);
+  const chat = useStore((state) => state.chat);
   const [prompt, setPrompt] = useState('');
   const [image, setImage] = useState(null); // { name: string, data: base64 string }
   const [isRecording, setIsRecording] = useState(false);

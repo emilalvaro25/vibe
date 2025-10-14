@@ -5,7 +5,6 @@
 import 'immer';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { createSelectorFunctions } from 'auto-zustand-selectors-hook';
 
 const useStore = create(
   immer((set) => ({
@@ -47,4 +46,4 @@ const useStore = create(
   }))
 );
 
-export default createSelectorFunctions(useStore);
+export default useStore;
