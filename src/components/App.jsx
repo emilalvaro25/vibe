@@ -132,7 +132,7 @@ export default function App() {
     <div className="app-container">
       <header>
         <div className="header-left">
-          <div className="header-logo">Emilio Vcoder</div>
+          <div className="header-logo">VibeCheck</div>
           <button className="header-button">
             Select chat <span className="icon">expand_more</span>
           </button>
@@ -146,7 +146,9 @@ export default function App() {
           <button onClick={toggleTheme} className="header-button theme-toggle-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
               <span className="icon">{theme === 'light' ? 'dark_mode' : 'light_mode'}</span>
           </button>
-          <div className="avatar">EV</div>
+          <div className="avatar">
+            <span className="icon">spark</span>
+          </div>
         </div>
       </header>
 
@@ -219,7 +221,7 @@ export default function App() {
             </button>
           </div>
         </div>
-        <p className="footer-text">Powered By Aquilles</p>
+        <p className="footer-text">Powered by Google Gemini</p>
       </footer>
     </div>
   );
