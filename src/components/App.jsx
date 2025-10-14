@@ -13,9 +13,36 @@ export default function App() {
   const [prompt, setPrompt] = useState('');
   const [image, setImage] = useState(null); // { name: string, data: base64 string }
   const [isRecording, setIsRecording] = useState(false);
+  const [theme, setTheme] = useState('dark');
 
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  // Effect to set initial theme from localStorage or system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else {
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+  }, []);
+
+  // Effect to apply theme to body and save to localStorage
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -114,6 +141,9 @@ export default function App() {
             <span className="icon">code</span> GitHub
           </a>
           <button className="header-button deploy-button">Deploy</button>
+          <button onClick={toggleTheme} className="header-button theme-toggle-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
+              <span className="icon">{theme === 'light' ? 'dark_mode' : 'light_mode'}</span>
+          </button>
           <div className="avatar">EV</div>
         </div>
       </header>

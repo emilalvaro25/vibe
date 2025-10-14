@@ -11,6 +11,16 @@
   --font-family-mono: 'Google Sans Mono', 'monospace';
 }
 
+body.light-theme {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --bg-tertiary: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+
 * {
   margin: 0;
   padding: 0;
@@ -22,6 +32,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: 14px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root, .app-container {
@@ -75,6 +86,10 @@ header {
   border-color: #444;
 }
 
+body.light-theme .header-button:hover, body.light-theme .header-link:hover {
+    border-color: #ccc;
+}
+
 .deploy-button {
   background-color: var(--text-primary);
   color: var(--bg-primary);
@@ -87,6 +102,19 @@ header {
   border-color: #ccc;
   color: var(--bg-primary);
 }
+
+body.light-theme .deploy-button {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+}
+
+body.light-theme .deploy-button:hover {
+  background-color: #374151;
+  border-color: #374151;
+  color: var(--bg-primary);
+}
+
 
 .avatar {
   width: 32px;
@@ -115,6 +143,13 @@ header {
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
+}
+
+.theme-toggle-button {
+    padding: 8px;
+}
+.theme-toggle-button .icon {
+    font-size: 20px;
 }
 
 /* Main Content */
@@ -253,6 +288,10 @@ main {
   gap: 12px;
 }
 
+body.light-theme .prompt-footer {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, var(--bg-primary) 50%);
+}
+
 .image-preview-wrapper {
   position: relative;
   max-width: 800px;
@@ -305,6 +344,10 @@ main {
 .remove-image-btn:hover {
   background: #444;
 }
+body.light-theme .remove-image-btn:hover {
+  background: #ccc;
+}
+
 
 .remove-image-btn .icon {
   font-size: 16px;
