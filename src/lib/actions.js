@@ -7,17 +7,39 @@ import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const systemInstruction = `You are an expert web developer specializing in Tailwind CSS. Given a prompt describing a UI component or a webpage, you must generate a complete, self-contained HTML file.
-This file must include a <script> tag to load Tailwind CSS from the CDN ('https://cdn.tailwindcss.com').
+const systemInstruction = `You are an expert web developer specializing in Tailwind CSS. 
+You will be given a prompt, which could be text or a combination of text and an image. 
+Your task is to generate a complete, self-contained HTML file that implements the described UI component or webpage.
+The generated file must include a <script> tag to load Tailwind CSS from the CDN ('https://cdn.tailwindcss.com').
 The HTML should be well-structured, and all styling must be done using Tailwind CSS classes.
-The entire response should be a single block of HTML code. Do not include any explanations or markdown formatting like \`\`\`html. Just return the raw HTML code.
-Ensure the design is modern, responsive, and aesthetically pleasing.`;
+The entire response must be a single block of HTML code. Do not include any explanations, comments, or markdown formatting like \`\`\`html. Just return the raw HTML code.
+Ensure the design is modern, responsive, and aesthetically pleasing. If an image is provided, use it as a visual reference for the design.`;
 
-export async function startChat(prompt) {
+function buildMessageParts(prompt, image) {
+  const parts = [];
+  if (prompt) {
+    parts.push({ text: prompt });
+  }
+  if (image) {
+    // image is a base64 string: "data:image/jpeg;base64,..."
+    const [mimeTypePart, base64Data] = image.split(',');
+    const mimeType = mimeTypePart.split(':')[1].split(';')[0];
+    parts.push({
+      inlineData: {
+        mimeType,
+        data: base64Data
+      }
+    });
+  }
+  return parts;
+}
+
+
+export async function startChat(prompt, image) {
   const { setChat, addMessage, updateLastMessage, setIsGenerating } = useStore.getState();
   
   setIsGenerating(true);
-  addMessage('user', prompt);
+  addMessage('user', prompt, image);
 
   const chat = ai.chats.create({
     model: 'gemini-2.5-flash',
@@ -30,7 +52,8 @@ export async function startChat(prompt) {
   addMessage('model', '');
 
   try {
-    const responseStream = await chat.sendMessageStream({ message: prompt });
+    const messageParts = buildMessageParts(prompt, image);
+    const responseStream = await chat.sendMessageStream({ message: messageParts });
     let fullResponse = '';
     for await (const chunk of responseStream) {
       fullResponse += chunk.text;
@@ -44,21 +67,22 @@ export async function startChat(prompt) {
   }
 }
 
-export async function continueChat(prompt) {
+export async function continueChat(prompt, image) {
     const { chat, addMessage, updateLastMessage, setIsGenerating } = useStore.getState();
 
     if (!chat) {
         console.error("Chat not initialized. Starting a new chat.");
-        await startChat(prompt);
+        await startChat(prompt, image);
         return;
     }
 
     setIsGenerating(true);
-    addMessage('user', prompt);
+    addMessage('user', prompt, image);
     addMessage('model', '');
 
     try {
-        const responseStream = await chat.sendMessageStream({ message: prompt });
+        const messageParts = buildMessageParts(prompt, image);
+        const responseStream = await chat.sendMessageStream({ message: messageParts });
         let fullResponse = '';
         for await (const chunk of responseStream) {
             fullResponse += chunk.text;

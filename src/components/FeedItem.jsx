@@ -4,10 +4,13 @@
 */
 import ModelOutput from './ModelOutput';
 
-export default function FeedItem({ userPrompt, modelResponse, isGenerating }) {
+export default function FeedItem({ userPrompt, userImage, modelResponse, isGenerating }) {
   return (
     <div className="chat-turn">
-      <div className="user-prompt">{userPrompt}</div>
+      <div className="user-prompt">
+        {userImage && <img src={userImage} alt="User upload" className="user-prompt-image" />}
+        {userPrompt && <div>{userPrompt}</div>}
+      </div>
       {isGenerating && !modelResponse && (
         <div className="loading-indicator">
           <span className="icon">hourglass_top</span> Generating...

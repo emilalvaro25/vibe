@@ -9,13 +9,13 @@ import { createSelectorFunctions } from 'auto-zustand-selectors-hook';
 
 const useStore = create(
   immer((set) => ({
-    messages: [], // { id: string, role: 'user' | 'model', content: string }
+    messages: [], // { id: string, role: 'user' | 'model', content: string, image?: string }
     isGenerating: false,
     chat: null,
 
-    addMessage: (role, content) =>
+    addMessage: (role, content, image = null) =>
       set((state) => {
-        state.messages.push({ id: crypto.randomUUID(), role, content });
+        state.messages.push({ id: crypto.randomUUID(), role, content, image });
       }),
     
     updateLastMessage: (content) =>

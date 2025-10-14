@@ -2,26 +2,62 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import useStore from '../lib/store';
-import { startChat, continueChat, resetChat } from '../lib/actions';
+import { startChat, continueChat } from '../lib/actions';
 import Intro from './Intro';
 import FeedItem from './FeedItem';
 
 export default function App() {
   const { messages, isGenerating, chat } = useStore.getState();
   const [prompt, setPrompt] = useState('');
+  const [image, setImage] = useState(null); // { name: string, data: base64 string }
+  const [isRecording, setIsRecording] = useState(false);
+
+  const fileInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('Speech recognition not supported in this browser.');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setPrompt(p => p ? `${p} ${transcript}` : transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+    
+    recognitionRef.current = recognition;
+  }, []);
 
   const handlePromptSubmit = useCallback(async () => {
-    if (prompt.trim() && !isGenerating) {
+    const currentPrompt = prompt.trim();
+    if ((currentPrompt || image) && !isGenerating) {
       if (chat) {
-        await continueChat(prompt);
+        await continueChat(currentPrompt, image?.data);
       } else {
-        await startChat(prompt);
+        await startChat(currentPrompt, image?.data);
       }
       setPrompt('');
+      setImage(null);
     }
-  }, [prompt, isGenerating, chat]);
+  }, [prompt, image, isGenerating, chat]);
 
   const handleSuggestionClick = useCallback((suggestion) => {
     setPrompt(suggestion);
@@ -34,18 +70,47 @@ export default function App() {
     }
   }, [handlePromptSubmit]);
 
+  const handleAddFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage({ name: file.name, data: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+    event.target.value = null; // Reset file input
+  };
+
+  const handleMicClick = () => {
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+
+    if (isRecording) {
+      recognition.stop();
+      setIsRecording(false);
+    } else {
+      recognition.start();
+      setIsRecording(true);
+    }
+  };
+  
   return (
     <div className="app-container">
       <header>
         <div className="header-left">
-          <div className="header-logo">Generative UI</div>
+          <div className="header-logo">Emilio Vcoder</div>
           <button className="header-button">
             Select chat <span className="icon">expand_more</span>
           </button>
         </div>
         <div className="header-right">
           <button className="header-button">What's This?</button>
-          <a href="https://github.com/google-gemini/generative-ai-docs/tree/main/demos/VibeCheck" target="_blank" rel="noopener noreferrer" className="header-link">
+          <a href="https://github.com/vercel/v0" target="_blank" rel="noopener noreferrer" className="header-link">
             <span className="icon">code</span> GitHub
           </a>
           <button className="header-button deploy-button">Deploy</button>
@@ -61,11 +126,12 @@ export default function App() {
             {messages.map((msg, index) => {
               if (msg.role === 'user') {
                 const modelMessage = messages[index + 1];
-                if (modelMessage && modelMessage.role === 'model') {
+                if (modelMessage) {
                   return (
                     <FeedItem 
                       key={msg.id} 
-                      userPrompt={msg.content} 
+                      userPrompt={msg.content}
+                      userImage={msg.image}
                       modelResponse={modelMessage.content} 
                       isGenerating={isGenerating && index === messages.length - 2}
                     />
@@ -79,24 +145,43 @@ export default function App() {
       </main>
 
       <footer className="prompt-footer">
-        <div className="prompt-input-wrapper">
-          <div className="prompt-input-icons left">
-            <button className="prompt-icon-button"><span className="icon">add</span></button>
+        {image && (
+          <div className="image-preview-wrapper">
+            <img src={image.data} alt="Preview" className="image-preview"/>
+            <span className="image-preview-text">{image.name}</span>
+            <button className="remove-image-btn" onClick={() => setImage(null)} aria-label="Remove image">
+              <span className="icon">close</span>
+            </button>
           </div>
-          <input
+        )}
+        <div className="prompt-input-wrapper">
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
+          <div className="prompt-input-icons left">
+            <button className="prompt-icon-button" onClick={handleAddFileClick} aria-label="Add file"><span className="icon">add</span></button>
+          </div>
+          <textarea
+            rows="1"
             className="prompt-input"
             placeholder="Describe what you want to build..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isGenerating}
+            style={{height: 'auto', maxHeight: '200px'}}
+            onInput={(e) => {
+              e.target.style.height = 'auto';
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
           />
           <div className="prompt-input-icons right">
-            <button className="prompt-icon-button"><span className="icon">mic</span></button>
+            <button className={`prompt-icon-button ${isRecording ? 'is-recording' : ''}`} onClick={handleMicClick} aria-label={isRecording ? 'Stop recording' : 'Start recording'}>
+              <span className="icon">mic</span>
+            </button>
             <button 
               className="prompt-icon-button prompt-submit-button" 
               onClick={handlePromptSubmit}
-              disabled={!prompt.trim() || isGenerating}
+              disabled={(!prompt.trim() && !image) || isGenerating}
+              aria-label="Submit prompt"
             >
               <span className="icon">arrow_upward</span>
             </button>
