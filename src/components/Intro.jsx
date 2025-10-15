@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 const suggestions = [
-  'Landing page',
-  'Todo app',
-  'Dashboard',
-  'Blog',
-  'E-commerce',
-  'Portfolio',
+  'Landing page for a SaaS product',
+  'Todo app with local storage',
+  'Dashboard with charts',
+  'A weather card component',
+  'Simple Flask app',
+  'Portfolio website',
   'Login form with a sleek design',
-  'A weather card component'
+  'Python script for data analysis'
 ];
 
 export default function Intro({ onSuggestionClick }) {

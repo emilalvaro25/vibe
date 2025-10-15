@@ -2,21 +2,29 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import ModelOutput from './ModelOutput';
 
-export default function FeedItem({ userPrompt, userImage, modelResponse, isGenerating }) {
-  return (
-    <div className="chat-turn">
-      <div className="user-prompt">
-        {userImage && <img src={userImage} alt="User upload" className="user-prompt-image" />}
-        {userPrompt && <div>{userPrompt}</div>}
-      </div>
-      {isGenerating && !modelResponse && (
-        <div className="loading-indicator">
-          <span className="icon">hourglass_top</span> Generating...
+export default function FeedItem({ message }) {
+  if (message.role === 'user') {
+    return (
+      <div className="chat-turn">
+        <div className="user-prompt">
+          {message.image && <img src={message.image} alt="User upload" className="user-prompt-image" />}
+          {message.content && <div>{message.content}</div>}
         </div>
-      )}
-      {modelResponse && <ModelOutput code={modelResponse} />}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  if (message.role === 'model') {
+    return (
+      <div className="chat-turn">
+        <div className="model-response-placeholder">
+          <span className="icon">spark</span>
+          <span>Project generated. See files on the right.</span>
+        </div>
+      </div>
+    )
+  }
+
+  return null;
 }

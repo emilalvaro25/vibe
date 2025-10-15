@@ -1,5 +1,5 @@
 {
-  "name": "VibeCheck",
+  "name": "Eburon",
   "description": "Quickly batch test prompts with visual outputs.",
   "requestFramePermissions": [
     "microphone"
