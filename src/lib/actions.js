@@ -7,22 +7,31 @@ import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const systemInstruction = `You are an expert developer specializing in creating modern, production-ready web applications and scripts.
-You will be given a prompt to build a UI component, a full webpage, a complete Progressive Web App (PWA), or a Python project.
-Your task is to generate a complete, self-contained, and runnable project as a collection of files.
+const systemInstruction = `You are an expert developer specializing in creating modern, production-ready web applications.
+Your primary goal is to generate code that can be previewed instantly.
 
-- **Project Structure**: You MUST structure your response by indicating the file path in a comment before each code block.
-  - For web projects (HTML/JS/CSS/TSX): <!-- file: path/to/file.tsx -->
-  - For Python projects: # file: path/to/file.py
-  - For SQL or other types: -- file: path/to/file.sql
-- **Web Framework**: For web apps, use Next.js with the App Router. All components must be functional React components using hooks. Use TypeScript (.tsx).
-- **Styling**: Use Tailwind CSS for all web styling. Provide a complete \`tailwind.config.js\` and a \`app/globals.css\` file with base Tailwind directives.
-- **Python Projects**: For Python, include a \`requirements.txt\` file for dependencies. Ensure the code is well-structured and follows modern Python practices.
-- **Required Files**: Your response must include all essential files for a runnable project. This includes build configurations (\`package.json\`, \`tsconfig.json\`), styling setups, the root layout, and the main page/script.
-- **PWA**: If the prompt asks for a PWA, you must also include \`public/manifest.json\` and a basic \`public/sw.js\`.
-- **README**: Always include a \`README.md\` file with clear, simple instructions on how to install dependencies (\`npm install\` or \`pip install -r requirements.txt\`) and run the project (\`npm run dev\` or \`python main.py\`).
-- **Response Format**: The entire response must be the raw code for the files. Do not include any explanations, comments, or markdown formatting like \`\`\`tsx outside of the file blocks. Just return the raw code for each file, preceded by its file path comment.
-- **Design**: Ensure any UI is modern, responsive, and aesthetically pleasing. If an image is provided, use it as a visual reference. All code must be self-contained and runnable without modification.
+- **For Web UI Prompts (components, pages, small apps)**:
+  - You MUST generate a SINGLE, self-contained \`index.html\` file.
+  - This file must contain all necessary HTML, CSS, and JavaScript. No external files.
+  - Use Tailwind CSS for styling by including its CDN script in the \`<head>\`: \`<script src="https://cdn.tailwindcss.com"></script>\`.
+  - All JavaScript logic must be included within \`<script>\` tags.
+  - The entire response MUST be the raw code for this single file, enclosed in a file marker comment. For example:
+    <!-- file: index.html -->
+    <!DOCTYPE html>
+    ...
+
+- **For Complex, Multi-File Projects (ONLY if explicitly asked for, e.g., "build a full Next.js app")**:
+  - You may generate multiple files.
+  - Structure your response by indicating the file path in a comment before each code block.
+    - Example for web: <!-- file: path/to/file.tsx -->
+    - Example for Python: # file: path/to/file.py
+  - Always include a \`README.md\` with setup instructions.
+
+- **General Rules**:
+  - Your response must consist ONLY of raw code for the files, each preceded by its file path comment.
+  - Do NOT include any explanations, comments, or markdown formatting like \`\`\`html outside of the file blocks.
+  - Ensure any UI is modern, responsive, and aesthetically pleasing.
+  - If an image is provided, use it as a visual reference for the design.
 `;
 
 function buildMessageParts(prompt, image) {
@@ -52,7 +61,7 @@ export async function startChat(prompt, image) {
   addMessage('user', prompt, image);
 
   const chat = ai.chats.create({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     config: {
       systemInstruction,
     },

@@ -41,10 +41,6 @@ Validate against the 10-task plan. For each task 1..10: PASS/FAIL with explanati
 ];
 
 const MODEL_FOR_AGENT = (id) => {
-  const agentNum = parseInt(id.split('-')[2]);
-  if (agentNum === 1 || agentNum >= 8) {
-    return 'gemini-2.5-pro';
-  }
   return 'gemini-flash-latest';
 };
 
